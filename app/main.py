@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.api import health, aggregate
 import logging
 from app.utils.client import client, close_client  # noqa: F401
@@ -18,14 +18,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="API Aggregator", version="0.1.0", lifespan=lifespan)
 
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Подключаем роутеры
+# Подключаем роутеры и статический html
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(health.router, tags=["Health"])
-app.include_router(aggregate.router, prefix="/api", tags=["Aggregator"])
+app.include_router(aggregate.router, tags=["Aggregator"])
+
+
+@app.get("/")
+async def read_index():
+    from fastapi.responses import FileResponse
+
+    return FileResponse("static/index.html")

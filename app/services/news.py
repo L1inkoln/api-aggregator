@@ -2,7 +2,7 @@ from typing import List
 from app.utils.constants import NEWS_URL
 import feedparser  # type: ignore
 import logging
-from app.models.schemas import NewsResponse
+from app.models.schemas import Article, NewsResponse
 
 logger = logging.getLogger(__name__)
 
@@ -10,10 +10,18 @@ logger = logging.getLogger(__name__)
 async def get_news_titles() -> NewsResponse:
     try:
         feed = feedparser.parse(NEWS_URL)
-        titles: List[str] = [
-            entry.title for entry in feed.entries[:5] if isinstance(entry.title, str)
-        ]
-        return NewsResponse(articles=titles)
+        articles: List[Article] = []
+        for entry in feed.entries[:5]:
+            if not isinstance(entry.title, str):
+                continue
+            link = getattr(entry, "link", "")
+            if isinstance(link, list):
+                link = link[0] if link else ""
+            elif not isinstance(link, str):
+                link = str(link)
+
+            articles.append(Article(title=entry.title, link=link))
+        return NewsResponse(articles=articles)
     except Exception as e:
         logger.error(f"Ошибка при получении новостей: {e}")
         return NewsResponse(articles=[])

@@ -31,8 +31,13 @@ class StockResponse(BaseModel):
     nasdq: Optional[float] = None
 
 
+class Article(BaseModel):
+    title: str
+    link: str
+
+
 class NewsResponse(BaseModel):
-    articles: List[str]
+    articles: List[Article]
 
 
 class AggregateResponse(BaseModel):
