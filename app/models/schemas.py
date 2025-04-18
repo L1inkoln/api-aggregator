@@ -1,3 +1,4 @@
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -19,6 +20,24 @@ class CurrencyResponse(BaseModel):
     eur: float
 
 
+class CryptoResponse(BaseModel):
+    btc: float
+    eth: float
+    usdt: float
+
+
+class StockResponse(BaseModel):
+    sp500: Optional[float] = None
+    nasdq: Optional[float] = None
+
+
+class NewsResponse(BaseModel):
+    articles: List[str]
+
+
 class AggregateResponse(BaseModel):
     weather: WeatherResponse
     currency: CurrencyResponse
+    crypto: CryptoResponse
+    indexes: StockResponse
+    articles: NewsResponse

@@ -1,5 +1,6 @@
 import logging
 import httpx
+from app.utils.constants import CBR_API
 from app.utils.client import client
 from app.models.schemas import CurrencyResponse
 
@@ -9,8 +10,7 @@ logger = logging.getLogger(__name__)
 async def get_currency() -> CurrencyResponse:
     try:
         response = await client.get(
-            "https://www.cbr-xml-daily.ru/daily_json.js",
-            timeout=5.0,
+            CBR_API,
         )
         response.raise_for_status()
         data = response.json()

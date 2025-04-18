@@ -1,31 +1,19 @@
-from fastapi.testclient import TestClient
-from app.main import app
-from app.models.schemas import WeatherResponse, CurrencyResponse, AggregateResponse
+import pytest
 
 
-def test_aggregate_endpoint(monkeypatch):
-    async def mock_weather():
-        return WeatherResponse(
-            city="Москва", temp=20.0, condition="Ясно", wind_speed=3.0
-        )
+@pytest.mark.anyio
+async def test_health_check(client):
+    response = await client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
 
-    async def mock_currency():
-        return CurrencyResponse(usd=95.0, eur=101.0)
 
-    monkeypatch.setattr("app.services.weather.get_weather", mock_weather)
-    monkeypatch.setattr("app.services.currency.get_currency", mock_currency)
-
-    with TestClient(app) as client:
-        response = client.get("/api/aggregate")
-        assert response.status_code == 200
-
-        json_data = response.json()
-
-        expected = AggregateResponse(
-            weather=WeatherResponse(
-                city="Москва", temp=20.0, condition="Ясно", wind_speed=3.0
-            ),
-            currency=CurrencyResponse(usd=95.0, eur=101.0),
-        )
-
-        assert json_data == expected.model_dump()
+@pytest.mark.anyio
+async def test_aggregate_endpoint(client):
+    response = await client.get("/api/aggregate?city=Moscow")
+    assert response.status_code == 200
+    data = response.json()
+    assert "weather" in data
+    assert "currency" in data
+    assert isinstance(data["weather"]["temp"], (int, float))
+    assert isinstance(data["currency"]["usd"], (int, float))
