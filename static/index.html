@@ -220,7 +220,7 @@
 </head>
 <body>
     <h1>API Aggregator Dashboard</h1>
-    
+
     <div class="container">
         <button id="fetchButton" onclick="fetchData()">
             <div class="btn-content">Получить все данные</div>
@@ -255,21 +255,31 @@
 
         // Определение иконки погоды
         function getWeatherIcon(condition) {
-            const lowerCondition = condition.toLowerCase();
-            if (lowerCondition.includes('ясно') || lowerCondition.includes('солнечно')) return '☀️';
-            if (lowerCondition.includes('облачно') || lowerCondition.includes('пасмурно')) return '☁️';
-            if (lowerCondition.includes('дождь') || lowerCondition.includes('ливень')) return '🌧️';
-            if (lowerCondition.includes('снег') || lowerCondition.includes('метель')) return '❄️';
-            if (lowerCondition.includes('гроза')) return '⛈️';
-            if (lowerCondition.includes('туман')) return '🌫️';
-            return '🌈';
+            const lower = condition.toLowerCase();
+
+            if (lower.includes('ясно') || lower.includes('солнечно')) return '☀️';
+            if (lower.includes('преимущественно ясно')) return '🌤️';
+            if (lower.includes('переменная облачность')) return '⛅';
+            if (lower.includes('пасмурно')) return '☁️';
+
+            if (lower.includes('туман') || lower.includes('иней')) return '🌫️';
+
+            if (lower.includes('морось')) return '🌦️';
+            if (lower.includes('дождь') || lower.includes('осадки')) return '🌧️';
+            if (lower.includes('ливень')) return '🌧️';
+            if (lower.includes('гроза')) return '⛈️';
+            if (lower.includes('град')) return '🌨️';
+
+            if (lower.includes('снег') || lower.includes('метель')) return '❄️';
+
+            return '🌈'; // Иконка по умолчанию
         }
 
         // Основная функция загрузки данных
         async function fetchData() {
             const button = document.getElementById('fetchButton');
             const dataContent = document.getElementById('dataContent');
-            
+
             button.classList.add('loading');
             dataContent.innerHTML = `
                 <div style="text-align: center; padding: 40px;">
@@ -277,14 +287,14 @@
                     <p style="margin-top: 20px;">Загружаем данные...</p>
                 </div>
             `;
-            
+
             try {
                 const response = await fetch('/aggregate');
                 if (!response.ok) {
                     throw new Error(`Ошибка HTTP: ${response.status}`);
                 }
                 const data = await response.json();
-                
+
                 // Форматируем криптовалюты
                 const formattedCrypto = {
                     btc: formatNumber(data.crypto.btc),
@@ -330,7 +340,7 @@
                                 <div class="data-value">${data.weather.wind_speed} м/с</div>
                             </div>
                         </div>
-                        
+
                         <!-- Валюта -->
                         <div class="data-section">
                             <h3>Курсы валют</h3>
@@ -343,7 +353,7 @@
                                 <div class="data-value currency">${data.currency.eur}</div>
                             </div>
                         </div>
-                        
+
                         <!-- Криптовалюта -->
                         <div class="data-section">
                             <h3>Криптовалюты</h3>
@@ -360,7 +370,7 @@
                                 <div class="data-value crypto">${formattedCrypto.usdt}</div>
                             </div>
                         </div>
-                        
+
                         <!-- Индексы -->
                         <div class="data-section">
                             <h3>Биржевые индексы</h3>
@@ -374,14 +384,14 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Новости -->
                     <div class="news-section fade-in">
                         <h3>Последние новости</h3>
                         ${newsHtml || '<p>Новости не найдены</p>'}
                     </div>
                 `;
-                
+
             } catch (error) {
                 dataContent.innerHTML = `
                     <div class="error fade-in">
