@@ -1,3 +1,5 @@
+from redis.asyncio import Redis
+from app.utils.cache import cache
 from app.utils.constants import COINS, CURRENCY
 from app.utils.client import client
 from app.models.schemas import CryptoResponse
@@ -6,7 +8,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-async def get_crypto() -> CryptoResponse:
+@cache(ttl=300)
+async def get_crypto(redis: Redis) -> CryptoResponse:
     url = f"https://api.coingecko.com/api/v3/simple/price?ids={COINS}&vs_currencies={CURRENCY}"
     try:
         response = await client.get(url)

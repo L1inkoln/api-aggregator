@@ -1,10 +1,20 @@
 import logging
 import yfinance as yf  # type: ignore
+from redis.asyncio import Redis
 from app.models.schemas import StockResponse
 from typing import Dict, Optional
+from app.utils.cache import cache
 from app.utils.constants import SYMBOLS
 
 logger = logging.getLogger(__name__)
+
+
+@cache(ttl=1800)
+async def get_stock_indexes(redis: Redis) -> StockResponse:
+    results: Dict[str, Optional[float]] = {}
+    for name, symbol in SYMBOLS.items():
+        results[name] = await fetch_latest_close_price(symbol)
+    return StockResponse(**results)
 
 
 async def fetch_latest_close_price(symbol: str) -> Optional[float]:
@@ -19,10 +29,3 @@ async def fetch_latest_close_price(symbol: str) -> Optional[float]:
     except Exception as e:
         logger.error(f"Error fetching data for {symbol}: {e}")
         return None
-
-
-async def get_stock_indexes() -> StockResponse:
-    results: Dict[str, Optional[float]] = {}
-    for name, symbol in SYMBOLS.items():
-        results[name] = await fetch_latest_close_price(symbol)
-    return StockResponse(**results)

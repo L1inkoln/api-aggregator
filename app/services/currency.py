@@ -1,5 +1,7 @@
 import logging
 import httpx
+from redis.asyncio import Redis
+from app.utils.cache import cache
 from app.utils.constants import CBR_API
 from app.utils.client import client
 from app.models.schemas import CurrencyResponse
@@ -7,7 +9,8 @@ from app.models.schemas import CurrencyResponse
 logger = logging.getLogger(__name__)
 
 
-async def get_currency() -> CurrencyResponse:
+@cache(ttl=1800)
+async def get_currency(redis: Redis) -> CurrencyResponse:
     try:
         response = await client.get(
             CBR_API,

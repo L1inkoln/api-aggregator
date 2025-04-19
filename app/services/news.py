@@ -1,4 +1,6 @@
 from typing import List
+from redis.asyncio import Redis
+from app.utils.cache import cache
 from app.utils.constants import NEWS_URL
 import feedparser  # type: ignore
 import logging
@@ -7,7 +9,8 @@ from app.models.schemas import Article, NewsResponse
 logger = logging.getLogger(__name__)
 
 
-async def get_news_titles() -> NewsResponse:
+@cache(ttl=600)
+async def get_news_titles(redis: Redis) -> NewsResponse:
     try:
         feed = feedparser.parse(NEWS_URL)
         articles: List[Article] = []
